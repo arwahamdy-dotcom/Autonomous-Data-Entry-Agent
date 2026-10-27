@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Large Dataset Files and Images (stored on Google Drive / Hugging Face, not Git)
+data/
+data/raw/
+data/processed/images/
+data/synth/out/images/
+data/synth/out/*.jpg
+*.jpg
+*.jpeg
+*.png
+!docs/figures/*.png
+*.tar.gz
+*.zip
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
