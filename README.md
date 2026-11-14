@@ -154,3 +154,128 @@ The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipe
 ## License
 
 See [`docs/datasets_licenses.md`](docs/datasets_licenses.md) for dataset sources, provenance, and applicable terms. No repository-wide license is declared here; do not assume that dataset licenses apply to the code or vice versa.
+
+---
+
+# Autonomous Data Entry Agent — OCR Lead Pipeline
+
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Google Colab | GPU](https://img.shields.io/badge/environment-Google%20Colab%20%7C%20GPU-F9AB00.svg?logo=googlecolab)](https://colab.research.google.com/)
+[![Storage: Google Drive](https://img.shields.io/badge/storage-Google%20Drive-4285F4.svg?logo=googledrive)](https://drive.google.com/)
+
+This is the OCR Lead section of the Autonomous Data Entry Agent project.
+This subsystem is responsible for choosing, benchmarking and running the OCR engine that turns every Arabic, English and mixed invoice or receipt image into text, with a position and a confidence for each piece of text. The Document Information Extraction models (Person 3) are trained on this output.
+
+## Project links
+
+- Colab notebook: [OCR_Pipeline.ipynb](https://colab.research.google.com/drive/1Eybn4TiwdRO8CetTXoRZeJSgtE3rTXhr?usp=sharing)
+- Saved final outputs on Google Drive in [OCR dataset v1/ocr_output](https://drive.google.com/drive/folders/1FESxKuDn_RZ_A0YNeP-ToP4tLz8IemuO?usp=sharing) and engines comparison results in [OCR dataset v1/ocr_benchmark](https://drive.google.com/drive/folders/1EKx-Fp-sYMlWfJJinlhfYx9UaVQvZxZE?usp=sharing). 
+
+## 📌 Executive Summary (What Was Done)
+
+1. **Unified engine interface (`engines.py`):**
+   - Wrapped four OCR engines: Tesseract, EasyOCR, PaddleOCR and Surya.
+   - All return the same format, `[{text, bbox, conf}]`, so an engine is swapped with one word: `run_ocr("surya", image_path)`.
+   - No engine is trained by us. They are used as published.
+
+2. **Fair benchmark on the validation split only:**
+   - 164 val documents, sampled evenly across language and quality (15 per group, fixed seed), so every engine reads exactly the same documents.
+   - Score = **field hit rate**: the share of the labelled fields (invoice number, supplier, total) found in the OCR text. The date is excluded from the main score because its printed format rarely matches the label.
+
+3. **Decision: Surya 0.17.1**
+
+   | Engine | Score (95% interval) | Arabic | Seconds per doc |
+   |---|---|---|---|
+   | **Surya 0.17.1** | **0.877** (0.843 to 0.912) | 0.733 | 2.45 |
+   | PaddleOCR (GPU) | 0.796 (0.750 to 0.839) | 0.550 | 1.10 |
+   | EasyOCR | 0.651 (0.599 to 0.703) | 0.517 | 1.26 |
+   | Tesseract | 0.468 (0.412 to 0.522) | 0.200 | 3.47 |
+
+   - Surya leads on every language and on both real (CORD) and synthetic documents. Its interval does not overlap with the others, so the gap is real.
+   - Routing (best engine per language and quality) was tested: 0.881 vs 0.877 for Surya alone. Not worth the extra complexity, so one engine is used for everything.
+   - Cost: Surya is the slowest of the good engines, about 3 hours for all 4,500 documents.
+
+4. **Safe, resumable production run:**
+   - The winner runs on val, train and test. Results are saved to Drive after every document.
+   - If Colab disconnects, re-running the cell continues where it stopped.
+   - Failed rows and rows made by another engine are redone, so the final files contain one engine only.
+   - Existing files are copied to `ocr_output_backup_before_rerun` before any rewrite.
+   - The run stops with a clear message if the engine cannot load, or after 5 errors in a row, instead of filling the files with errors.
+
+## 📂 Structure
+
+```
+ocr/
+│
+├── OCR_Pipeline.ipynb            # Colab notebook: benchmark, winner selection, final run
+├── engines.py                    # The four engine wrappers (the notebook also writes it into Colab)
+
+Google Drive (OCR dataset v1/)
+├── data/                         # Input from the Data Lead (never edited)
+│   ├── processed/images/         # Real CORD receipts
+│   ├── synth/out/images/         # Synthetic invoices
+│   └── splits/                   # train.jsonl, val.jsonl, test.jsonl
+├── ocr_benchmark/                # One CSV per engine + all_engines_val.csv
+├── ocr_output/                   # Final train/val/test_with_ocr.jsonl
+```
+
+## 📋 OCR Data Contract Specification
+
+The OCR step reads each record from the Data Lead's splits and fills in one field, `ocr`. Every other field is kept exactly as it was.
+
+```json
+"ocr": {
+  "engine": "surya",
+  "words": [
+    {"text": "شركة النور للتجارة", "bbox": [120, 40, 610, 92], "conf": 0.97}
+  ]
+}
+```
+*(illustrative values)*
+
+| Field | Description |
+|---|---|
+| `engine` | Engine that produced the result (`surya` for the final run) |
+| `words[].text` | Recognized text |
+| `words[].bbox` | `[x1, y1, x2, y2]` in pixels |
+| `words[].conf` | Confidence from 0 to 1 |
+| `error` | Only present if the document failed. Failed rows are redone on the next run |
+
+**Granularity:** Surya returns text **lines**, not single words (Tesseract returns words). Each item in `words` is therefore a line.
+
+## 🚀 How to Run the Pipeline (Google Colab & Drive)
+
+The engines need different library versions and installing one can break another, so the notebook has three modes. Use a **fresh Colab session** for each (Runtime > Change runtime type > GPU).
+
+| Session | `MODE` | Runs |
+|---|---|---|
+| 1 | `main` | Tesseract and EasyOCR |
+| 2 | `paddle` | PaddleOCR on GPU (its install breaks PyTorch, which EasyOCR needs) |
+| 3 | `surya` | Surya 0.17.1 (version 0.20 changed the API and returns blocks, not lines) |
+
+Run the cells in order:
+
+1. **Config:** set `MODE` (and `SKIP_INSTALL = True` after a runtime restart).
+2. **Mount Drive and set paths.**
+3. **Install** the engine for this mode.
+4. **Write `engines.py`** and import it.
+5. **Helpers:** loading, scoring, normalization.
+6. **Benchmark (Part A):** each engine runs on the val sample and saves its CSV to Drive. Stop here in sessions 2 and 3.
+7. **Results:** reads every engine's CSV, prints the tables, suggests a winner.
+8. **Pick the winner and check the time estimate.**
+9. **Part B:** run the winner on val, train, then test (val first, as a 20-minute sanity check).
+10. **Final check:** records, errors and empty results per split.
+
+## 🔒 Verification & Definition of Done
+
+- ✅ Four engines wrapped with one shared output format.
+- ✅ All four benchmarked on the same 164 val documents.
+- ✅ Winner chosen on val only, with confidence intervals and a routing check.
+- ✅ Run is resumable and does not overwrite good results.
+- ⬜ `val`, `train` and `test` `_with_ocr.jsonl` complete: record counts match the splits (516 / 2,759 / 1,225) with 0 errors. *(confirm with the final check cell)*
+
+## ⚠️ Notes
+
+- **No full transcription in the data**, so CER and WER could not be computed. Engines were compared by field hit rate instead.
+- **All Arabic and mixed documents are synthetic.** The Arabic ranking is not confirmed on real Arabic receipts. The only real documents in val are 149 English CORD receipts.
+- **The benchmark used a 164-document sample**, not the full 516 val documents.
