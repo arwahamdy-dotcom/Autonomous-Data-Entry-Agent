@@ -32,24 +32,48 @@ As the **Data Lead**, the following end-to-end data engineering pipeline has bee
    - Guaranteed extraction target for the core 4 fields: `invoice_number`, `date`, `supplier`, and `total`.
 
 2. **Multilingual Dataset Integration:**
-   - **Open Datasets Standardized:** Integrated and standardized benchmarks from Hugging Face including **CORD v2** (1,000 receipts) and **SROIE / ICDAR 2019** (970+ receipts).
-   - **Arabic & Mixed Coverage:** Integrated and audited the **CORU / ReceiptSense** dataset for Middle Eastern Arabic/English receipts.
+   - **Open Datasets Standardized:** The released dataset includes **CORD v2** (1,000 original receipts, 946 retained after annotation filtering) and 3,500 synthetic documents.
+   - **Arabic & Mixed Coverage:** Arabic and mixed-language coverage in the released dataset is provided by synthetic documents. CORU / ReceiptSense was investigated but is not included in the released splits.
 
 3. **High-Fidelity Synthetic Invoice Generator (`generate_synthetic.py`):**
-   - Engineered an automated generator producing **8,000+ realistic Arabic, English, and mixed invoices/receipts**.
+   - Engineered an automated generator producing **3,500 Arabic, English, and mixed invoices/receipts in the released dataset**.
    - Incorporates RTL support, Google Arabic fonts (Cairo, Amiri), Western and Arabic-Indic numerals, realistic business names, line items, and dynamic image degradations (blur, noise, perspective skew, low contrast, JPEG artifacts).
    - **Correct-by-construction ground truth** eliminating human annotation errors.
 
-4. **Zero-Error Data Validation & Quality Control (`validate_dataset.py`):**
+4. **Dataset Validation & Quality Control (`validate_dataset.py`):**
    - Strict automated schema validation ensuring valid dates, positive amounts, unique `doc_id`s, and image integrity.
 
 5. **Leakage-Free Splitting (`create_splits.py` & `check_leakage.py`):**
    - Stratified dataset split into **Train (80%)**, **Validation (15%)**, and **Test (5%)** with a fixed reproducible seed (`seed=42`).
-   - Cryptographic MD5 hash check guaranteeing **0 duplicate images** or document overlap between splits.
+   - Cryptographic MD5 hash check confirming **0 cross-split duplicate images** or document-ID overlap.
    - Holdout synthetic templates and real test sets reserved exclusively for final evaluation.
 
 6. **Exploratory Data Analysis & Reporting (`run_eda.py`):**
    - Automated profiling generating comprehensive distributions, token statistics, and visual charts.
+
+---
+
+## Dataset v1.1 — Released Dataset Status
+
+See the [Dataset v1.1 Release Manifest](docs/dataset_v1.1_manifest.md) for the complete release inventory, validation results, and exclusions.
+
+
+The patched v1.1 dataset contains **4,446 retained documents**:
+
+| Split | CORD | Synthetic | Total |
+|---|---:|---:|---:|
+| Train | 781 | 1,959 | 2,740 |
+| Validation | 121 | 367 | 488 |
+| Test | 44 | 1,174 | 1,218 |
+| **Total** | **946** | **3,500** | **4,446** |
+
+**CORD annotation policy:** Only the total is retained from the original CORD annotations. Supplier, date, and invoice number are blank. CORD records have `quality="unassessed"` and `annotations.origin_language="id"`. Twenty-eight CORD records without an annotated total were excluded.
+
+**Synthetic holdout:** The `ar_commercial` and `mixed_bilingual` templates are reserved for the test split and tagged with `annotations.holdout_template=true` (1,051 records).
+
+Every retained record includes `annotations.image_width` and `annotations.image_height`. The split JSONL files and their OCR output counterparts were patched consistently.
+
+SROIE, CORU / ReceiptSense, HF Invoices, and separately collected real documents are **not included** in these v1.1 splits.
 
 ---
 
@@ -133,7 +157,7 @@ The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipe
 3. Run the cells sequentially:
    - **Cell 1:** Mounts Google Drive and navigates to the project directory.
    - **Cell 2:** Installs dependencies (`datasets`, `playwright`, `pillow`, `arabic-reshaper`, etc.).
-   - **Cell 3:** Downloads and standardizes CORD and SROIE datasets.
+   - **Cell 3:** Original dataset-ingestion workflow (CORD and SROIE); SROIE is not included in the v1.1 release.
    - **Cell 4:** Generates synthetic invoices with ground truth.
    - **Cell 5:** Validates the dataset schema (`validate_dataset.py`).
    - **Cell 6:** Splits the data (`create_splits.py`) and checks for leakage (`check_leakage.py`).
@@ -146,7 +170,8 @@ The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipe
 
 - [x] All document sources converted to single unified JSONL contract.
 - [x] `validate_dataset.py` returns **0 errors**.
-- [x] `check_leakage.py` confirms **0 cross-split duplicates** (hash-verified).
+- [x] `check_leakage.py` confirms **0 cross-split duplicate images** and document-ID overlap.
+- [!] The checker also reports **26 same-split duplicate-image groups**. These are not cross-split leakage, but may inflate training metrics and should be considered during evaluation.
 - [x] Stratified splits generated (`data/splits/train.jsonl`, `val.jsonl`, `test.jsonl`).
 - [x] Synthetic Arabic/English dataset generated with full ground truth.
 - [x] Comprehensive documentation and license audit completed.
@@ -193,7 +218,7 @@ This subsystem is responsible for choosing, benchmarking and running the OCR eng
 
    - Surya leads on every language and on both real (CORD) and synthetic documents. Its interval does not overlap with the others, so the gap is real.
    - Routing (best engine per language and quality) was tested: 0.881 vs 0.877 for Surya alone. Not worth the extra complexity, so one engine is used for everything.
-   - Cost: Surya is the slowest of the good engines, about 3 hours for all 4,500 documents.
+   - Cost: Surya is the slowest of the good engines. The original OCR run covered 4,500 documents before v1.1 filtering.
 
 4. **Safe, resumable production run:**
    - The winner runs on val, train and test. Results are saved to Drive after every document.
@@ -272,10 +297,10 @@ Run the cells in order:
 - ✅ All four benchmarked on the same 164 val documents.
 - ✅ Winner chosen on val only, with confidence intervals and a routing check.
 - ✅ Run is resumable and does not overwrite good results.
-- ⬜ `val`, `train` and `test` `_with_ocr.jsonl` complete: record counts match the splits (516 / 2,759 / 1,225) with 0 errors. *(confirm with the final check cell)*
+- ⬜ `val`, `train` and `test` `_with_ocr.jsonl` complete: record counts match the splits (488 / 2,740 / 1,218) with 0 errors. *(confirm with the final check cell)*
 
 ## ⚠️ Notes
 
 - **No full transcription in the data**, so CER and WER could not be computed. Engines were compared by field hit rate instead.
-- **All Arabic and mixed documents are synthetic.** The Arabic ranking is not confirmed on real Arabic receipts. The only real documents in val are 149 English CORD receipts.
-- **The benchmark used a 164-document sample**, not the full 516 val documents.
+- **All Arabic and mixed documents are synthetic.** The Arabic ranking is not confirmed on real Arabic receipts. The validation split contains 140 retained English CORD receipts.
+- **The benchmark used a 164-document sample**, not the full 488 validation documents.

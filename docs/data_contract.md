@@ -1,9 +1,9 @@
-# Data Contract — v1
+# Data Contract — v1.1
 
-> **Status:** FROZEN  
-> **Owner:** Data Lead (Person 1)  
-> **Date Frozen:** 2026-10-24  
-> **Seed:** `42` (used everywhere)
+> **Status:** FROZEN for the v1.1 dataset release
+> **Owner:** Data Lead (Person 1)
+> **Patch Date:** 2026-11-17
+> **Seed:** `42` (used for the original dataset generation workflow)
 
 ---
 
@@ -12,11 +12,15 @@
 | Field | Allowed Values |
 |---|---|
 | `language` | `en`, `ar`, `mixed` |
-| `source` | `sroie`, `cord`, `coru`, `invoices_hf`, `synthetic`, `real` |
+| `source` | `cord`, `synthetic` in the v1.1 release; the schema may support additional sources in future versions |
 | `quality` | `clear`, `blurry`, `tilted`, `noisy`, `unassessed` |
 
-- **`language`** refers to the language of the document as we label it, not the origin language of the dataset. For example, CORD documents are originally Indonesian but may be labeled `en` if the text on the receipt is English. The original dataset language is stored in `annotations.origin_language`.
-- **`quality`** defaults to `unassessed` until explicitly evaluated.
+**Sources included in v1.1:** CORD v2 and generated synthetic documents only.
+
+SROIE, CORU / ReceiptSense, HF Invoices, FUNSD, and separately collected real documents are not included in the v1.1 dataset splits.
+
+- **`language`** refers to the language assigned to the document, not necessarily the original language of its source dataset. The original source language is stored in `annotations.origin_language`.
+- **`quality`** defaults to `unassessed` until explicitly evaluated. All retained CORD records use `unassessed`.
 
 ---
 
@@ -24,126 +28,169 @@
 
 | Rule | Detail |
 |---|---|
-| Copy exactly as printed | No cleaning, no normalization. That is Person 4's job. |
-| Missing field | Empty string `""`, **never** `null` or `None` |
-| Arabic-Indic digits | Keep as-is (e.g. `٠١٢٣٤٥٦٧٨٩`) |
-| Currency symbols | Keep as-is |
-| Whitespace | Preserve internal whitespace; trim leading/trailing |
+| Missing field | Empty string `""`, never `null` or `None` |
+| Arabic-Indic digits | Preserve as-is when present |
+| Currency symbols | Preserve as-is |
+| Whitespace | Preserve internal whitespace; trim leading/trailing whitespace |
+| Ground-truth structure | Exactly four keys: `invoice_number`, `date`, `supplier`, `total` |
+
+### CORD v1.1 annotation policy
+
+CORD records use a restricted annotation policy:
+
+- `total` is taken only from the CORD `total.total_price` annotation.
+- `supplier`, `date`, and `invoice_number` are empty strings.
+- Records without an annotated total are excluded.
+- `quality` is `unassessed`.
+- `annotations.origin_language` is `id`.
+- `annotations.label_version` is `v1.1`.
+
+Do not fill missing CORD fields by inference or by copying values from other annotation sections.
 
 ---
 
 ## 3. `doc_id` Format
 
-```
+```text
 <source>_<split>_<id>
 ```
 
-- `<source>` is one of the allowed source values.
-- `<split>` is `train`, `val`, or `test`.
-- `<id>` is the source's own unique identifier (filename stem, index, etc.).
-- **Must be globally unique across the entire dataset.**
+- `<source>` identifies the source.
+- `<split>` identifies the source split.
+- `<id>` is the source's unique identifier.
+- `doc_id` must be globally unique across the dataset.
 
 Examples:
-- `sroie_train_X51005433522`
-- `cord_val_00042`
+
+- `cord_validation_00001`
 - `synthetic_train_00001`
-- `real_test_invoice_007`
 
 ---
 
-## 4. JSONL Schema (One JSON Object Per Line)
+## 4. JSONL Schema
+
+One JSON object per line.
+
+### CORD v1.1 example
 
 ```json
 {
-  "doc_id": "sroie_train_X51005433522",
-  "image_path": "data/processed/images/sroie_train_X51005433522.jpg",
+  "doc_id": "cord_train_00214",
+  "image_path": "data/processed/images/cord_train_00214.jpg",
   "language": "en",
-  "source": "sroie",
+  "source": "cord",
   "quality": "unassessed",
   "ground_truth": {
     "invoice_number": "",
     "date": "",
     "supplier": "",
-    "total": ""
+    "total": "58,000"
   },
   "ocr": {
     "engine": "",
     "words": []
   },
   "prediction": {},
-  "annotations": {},
+  "annotations": {
+    "cord_split": "train",
+    "origin_language": "id",
+    "label_version": "v1.1",
+    "image_width": 1108,
+    "image_height": 1478
+  },
   "source_split": "train",
-  "source_key": "X51005433522"
+  "source_key": "214"
 }
 ```
 
+This example is taken from an actual retained CORD record.
 ### Field Descriptions
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `doc_id` | string | ✅ | Globally unique document identifier |
-| `image_path` | string | ✅ | Relative path to the processed image |
-| `language` | string | ✅ | `en`, `ar`, or `mixed` |
-| `source` | string | ✅ | Dataset source identifier |
-| `quality` | string | ✅ | Image quality assessment |
-| `ground_truth` | object | ✅ | Exactly 4 keys, all strings |
-| `ground_truth.invoice_number` | string | ✅ | Invoice/receipt number as printed |
-| `ground_truth.date` | string | ✅ | Issue date as printed |
-| `ground_truth.supplier` | string | ✅ | Issuing business name as printed |
-| `ground_truth.total` | string | ✅ | Final amount due (including tax) as printed |
-| `ocr` | object | ✅ | OCR output (filled by Person 2) |
-| `ocr.engine` | string | ✅ | OCR engine name (empty until filled) |
-| `ocr.words` | array | ✅ | Word-level OCR results (empty until filled) |
-| `prediction` | object | ✅ | Model predictions (filled by Person 3) |
-| `annotations` | object | ✅ | Source-specific metadata, origin_language, etc. |
-| `source_split` | string | ✅ | Original split in the source dataset |
-| `source_key` | string | ✅ | Original key/ID in the source dataset |
+| `doc_id` | string | Yes | Globally unique document identifier |
+| `image_path` | string | Yes | Relative path to the image |
+| `language` | string | Yes | `en`, `ar`, or `mixed` |
+| `source` | string | Yes | Dataset source identifier |
+| `quality` | string | Yes | Image quality assessment |
+| `ground_truth` | object | Yes | Exactly four keys, all strings |
+| `ground_truth.invoice_number` | string | Yes | Invoice/receipt number; empty if unavailable |
+| `ground_truth.date` | string | Yes | Issue date; empty if unavailable |
+| `ground_truth.supplier` | string | Yes | Issuing business name; empty if unavailable |
+| `ground_truth.total` | string | Yes | Final amount due; empty if unavailable |
+| `ocr` | object | Yes | OCR output |
+| `ocr.engine` | string | Yes | OCR engine name |
+| `ocr.words` | array | Yes | Word-level OCR results |
+| `prediction` | object | Yes | Model predictions |
+| `annotations` | object | Yes | Source-specific metadata |
+| `source_split` | string | Yes | Original source split |
+| `source_key` | string | Yes | Original source key or identifier |
 
-### Extra Fields in `annotations`
+### Required v1.1 Annotation Metadata
 
-These are allowed and encouraged:
+| Field | Type | Description |
+|---|---|---|
+| `annotations.image_width` | integer | Image width in pixels |
+| `annotations.image_height` | integer | Image height in pixels |
+| `annotations.label_version` | string | Annotation contract version; `v1.1` for patched records |
+
+### Additional Allowed Annotation Metadata
 
 | Field | Description |
 |---|---|
-| `annotations.origin_language` | Original language of the source dataset (e.g. `id` for CORD) |
+| `annotations.origin_language` | Original language of the source dataset, e.g. `id` for CORD |
+| `annotations.cord_split` | Original CORD split |
 | `annotations.template_id` | Template used for synthetic generation |
+| `annotations.holdout_template` | Boolean identifying a reserved synthetic holdout template |
 | `annotations.font` | Font used for synthetic generation |
-| `annotations.seed` | Per-document seed for synthetic generation |
-| `annotations.degradations` | List of degradations applied |
+| `annotations.seed` | Per-document generation seed |
+| `annotations.degradations` | List of image degradations applied |
 | `annotations.locale` | Faker locale used |
 | `annotations.needs_manual_verification` | Flag for suspicious labels |
-| `annotations.review_reason` | Why this document needs review |
+| `annotations.review_reason` | Reason a document needs review |
+
+For v1.1, the synthetic templates `ar_commercial` and `mixed_bilingual` are reserved for the final test split. The test split contains 654 `ar_commercial` records and 397 `mixed_bilingual` records (1,051 total). All are tagged with `annotations.holdout_template=true` and their template names are stored in `annotations.template_id`. Their `source_split` value remains `train`, representing the original synthetic generation split; the final assigned split is determined by the JSONL file containing the record.
 
 ---
 
 ## 5. Image Format
 
 - **Format:** RGB JPEG
-- **Quality:** 95 (for conversions), 30–70 (for synthetic degradations)
-- **Location:** `data/processed/images/`
+- **Location:** `data/processed/images/` for CORD images; synthetic images are stored under `data/synth/out/images/`.
 - **Filename:** `<doc_id>.jpg`
+- **Dimensions:** Recorded in `annotations.image_width` and `annotations.image_height`.
 
 ---
 
-## 6. File Locations
+## 6. v1.1 Dataset Contents and File Locations
 
-| File | Path |
+The released dataset contains **4,446 retained records**:
+
+| Split | CORD | Synthetic | Total |
+|---|---:|---:|---:|
+| Train | 781 | 1,959 | 2,740 |
+| Validation | 121 | 367 | 488 |
+| Test | 44 | 1,174 | 1,218 |
+| **Total** | **946** | **3,500** | **4,446** |
+
+| Artifact | Path |
 |---|---|
-| Converted SROIE | `data/processed/sroie.jsonl` |
-| Converted CORD | `data/processed/cord.jsonl` |
-| Converted CORU | `data/processed/coru.jsonl` |
-| Converted invoices | `data/processed/invoices.jsonl` |
-| Synthetic data | `data/synth/out/synthetic.jsonl` |
-| Real data (labeled) | `data/real/labeled/real.jsonl` |
+| CORD images | `data/processed/images/` |
+| Synthetic images | `data/synth/out/images/` |
 | Train split | `data/splits/train.jsonl` |
 | Validation split | `data/splits/val.jsonl` |
 | Test split | `data/splits/test.jsonl` |
-| Real validation | `data/splits/real_val.jsonl` |
-| Real test (LOCKED) | `data/splits/real_test.jsonl` |
-| Review items | `data/review/*.jsonl` |
+| Train OCR output | `ocr_output/train_with_ocr.jsonl` |
+| Validation OCR output | `ocr_output/val_with_ocr.jsonl` |
+| Test OCR output | `ocr_output/test_with_ocr.jsonl` |
+| Split report | `data/splits/split_report.csv` |
+
+The OCR output JSONL files correspond to the same retained records as their respective split files.
+
+The following datasets and files are **not part of the v1.1 release**: SROIE, CORU / ReceiptSense, HF Invoices, separately collected real data, `real_val.jsonl`, and `real_test.jsonl`.
 
 ---
 
 ## 7. Changelog
 
-All dataset versions are tracked in `CHANGELOG.md` at the project root.
+Dataset changes and version history are tracked in `CHANGELOG.md` at the repository root.
