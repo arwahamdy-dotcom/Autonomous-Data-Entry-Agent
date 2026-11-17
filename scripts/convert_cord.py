@@ -1,130 +1,123 @@
 """
-Convert CORD-v2 (Consolidated Receipt Dataset) from Hugging Face to JSONL contract.
+Convert CORD-v2 from Hugging Face into the project JSONL contract.
 
-CORD provides:
-  - image: PIL Image
-  - ground_truth: JSON string with menu, sub_total, total, etc.
-
-Usage:
-    python scripts/convert_cord.py
-
-Produces:
-    data/processed/cord.jsonl
-    data/processed/images/cord_<split>_<index>.jpg
+Preserves original HF split and row index for reproducible v1.1 patching.
 """
 
+import os
 import sys
 import json
+import re
 from pathlib import Path
 from collections import Counter
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from utils import (
-    make_record, write_jsonl, convert_image_to_rgb_jpeg,
-    IMAGE_DIR, REVIEW_DIR,
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+os.chdir(PROJECT_ROOT)
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+
+from utils import make_record, write_jsonl, IMAGE_DIR
 
 
-def extract_cord_fields(gt_json_str: str) -> dict:
-    """Extract supplier, date, total, invoice_number from CORD ground truth."""
-    fields = {
-        "invoice_number": "",
-        "date": "",
-        "supplier": "",
-        "total": "",
-    }
-    if not gt_json_str:
-        return fields
+def extract_cord_total(gt_json):
+    """Extract only gt_parse.total.total_price."""
+    if isinstance(gt_json, str):
+        gt_json = json.loads(gt_json)
 
-    try:
-        gt = json.loads(gt_json_str) if isinstance(gt_json_str, str) else gt_json_str
-    except Exception:
-        return fields
+    total = (
+        gt_json.get("gt_parse", {})
+        .get("total", {})
+        .get("total_price")
+    )
 
-    valid_lines = gt.get("valid_line", [])
-    for line in valid_lines:
-        category = line.get("category", "")
-        words = line.get("words", [])
-        text = " ".join(w.get("text", "") for w in words).strip()
+    if total is None or not str(total).strip():
+        return ""
 
-        if not text:
-            continue
-
-        if "total.total_price" in category or category == "total":
-            if not fields["total"]:
-                fields["total"] = text
-        elif "store_name" in category or "sub_total.store" in category or category == "menu.nm":
-            if not fields["supplier"]:
-                fields["supplier"] = text
-        elif "date" in category:
-            if not fields["date"]:
-                fields["date"] = text
-
-    return fields
+    total = str(total).strip()
+    total = re.sub(
+        r"^\s*(?:GRAND\s+)?TOTAL\b\s*[:\-]?\s*",
+        "",
+        total,
+        flags=re.IGNORECASE,
+    )
+    return total
 
 
 def convert_cord():
-    print("=" * 60)
-    print("Converting CORD-v2 Dataset from Hugging Face")
-    print("=" * 60)
+    from datasets import load_dataset
 
-    try:
-        from datasets import load_dataset
-    except ImportError:
-        print("  [ERROR] 'datasets' library is required. Run: pip install datasets")
-        return
+    print("Loading naver-clova-ix/cord-v2...")
+    ds = load_dataset("naver-clova-ix/cord-v2")
 
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
-    out_jsonl = Path("data/processed/cord.jsonl")
+    output_path = PROJECT_ROOT / "data" / "processed" / "cord.jsonl"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     records = []
-    try:
-        print("  Loading naver-clova-ix/cord-v2...")
-        ds = load_dataset("naver-clova-ix/cord-v2", trust_remote_code=True)
-    except Exception as e:
-        print(f"  [WARN] Failed to load cord-v2: {e}")
-        return
+    stats = Counter()
 
     for split in ["train", "validation", "test"]:
         if split not in ds:
             continue
-        print(f"  Processing {split} split ({len(ds[split])} records)...")
-        for i, item in enumerate(ds[split]):
-            doc_id = f"cord_{split}_{i:05d}"
-            img_filename = f"{doc_id}.jpg"
-            img_path = IMAGE_DIR / img_filename
 
-            # Save image
-            pil_img = item.get("image")
-            if pil_img and not img_path.exists():
-                try:
-                    pil_img = pil_img.convert("RGB")
-                    pil_img.save(str(img_path), "JPEG", quality=90)
-                except Exception as e:
-                    print(f"  [WARN] Failed to save image for {doc_id}: {e}")
-                    continue
+        print(f"Processing {split}: {len(ds[split])} records")
+
+        for index, item in enumerate(ds[split]):
+            doc_id = f"cord_{split}_{index:05d}"
+            filename = f"{doc_id}.jpg"
+            image_path = IMAGE_DIR / filename
+
+            image = item.get("image")
+            if image is None:
+                raise ValueError(f"Missing image: {doc_id}")
+
+            rgb_image = image.convert("RGB")
+            image_width, image_height = rgb_image.size
+            rgb_image.save(image_path, format="JPEG", quality=90)
 
             gt_raw = item.get("ground_truth", "")
-            fields = extract_cord_fields(gt_raw)
+            gt_json = json.loads(gt_raw) if isinstance(gt_raw, str) else gt_raw
+
+            hf_image_id = int(gt_json["meta"]["image_id"])
+            if hf_image_id != index:
+                raise ValueError(
+                    f"HF image ID mismatch for {doc_id}: "
+                    f"expected {index}, got {hf_image_id}"
+                )
+
+            total = extract_cord_total(gt_json)
+
+            if not total:
+                stats["missing_total"] += 1
 
             record = make_record(
                 doc_id=doc_id,
-                image_rel_path=f"data/processed/images/{img_filename}",
+                image_rel_path=f"data/processed/images/{filename}",
                 language="en",
                 source="cord",
-                quality="clear",
-                ground_truth=fields,
-                annotations={"cord_split": split},
+                quality="unassessed",
+                ground_truth={
+                    "invoice_number": "",
+                    "date": "",
+                    "supplier": "",
+                    "total": total,
+                },
+                annotations={
+                    "cord_split": split,
+                    "image_width": image_width,
+                    "image_height": image_height,
+                },
                 source_split=split,
-                source_key=str(i),
+                source_key=str(index),
             )
-            records.append(record)
 
-    if records:
-        write_jsonl(records, out_jsonl)
-        print(f"\n✅ Converted {len(records)} CORD records -> {out_jsonl}")
-    else:
-        print("  [WARN] No CORD records converted.")
+            records.append(record)
+            stats["converted"] += 1
+
+    write_jsonl(records, output_path)
+
+    print("\nConversion complete.")
+    print("Statistics:", dict(stats))
+    print("Output:", output_path)
 
 
 if __name__ == "__main__":
