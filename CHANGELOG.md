@@ -2,6 +2,17 @@
 
 All notable dataset and documentation changes are recorded here.
 
+## [Unreleased]
+
+### Generator corrections
+
+- Corrected synthetic font annotations to reflect each template's actual CSS font configuration:
+  - English: Inter and Courier New.
+  - Arabic: Cairo, Amiri, and Noto Naskh Arabic.
+  - Mixed: Cairo, Cairo + Inter.
+- Font annotation correction applies to future synthetic generation only; released v1.1 JSONL files and images were not modified.
+- Observed that 1,076 of 1,970 Arabic records in v1.1 (54.62%) have `use_arabic_indic=true`, while the current generator configuration specifies a 30% sampling ratio. This discrepancy remains under investigation; no released records or sampling settings were changed.
+
 ## [1.1.0] — 2026-11-17
 
 ### Dataset changes

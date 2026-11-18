@@ -927,7 +927,16 @@ def generate_document(index: int, template_id: str, template: dict,
         "prediction": {},
         "annotations": {
             "template_id": template_id,
-            "font": "Cairo" if lang in ("ar", "mixed") else "Inter",
+            "font": {
+                "en_modern": "Inter",
+                "en_receipt": "Courier New",
+                "ar_formal": "Cairo",
+                "ar_receipt": "Amiri",
+                "ar_commercial": "Noto Naskh Arabic",
+                "mixed_bilingual": "Cairo + Inter",
+                "mixed_receipt": "Cairo",
+                "mixed_corporate": "Cairo + Inter",
+            }.get(template_id, "unknown"),
             "seed": SEED + index,
             "degradations": [],  # filled after rendering
             "locale": "ar_EG" if lang == "ar" else "en_US" if lang == "en" else "mixed",
