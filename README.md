@@ -38,15 +38,15 @@ As the **Data Lead**, the following end-to-end data engineering pipeline has bee
 3. **High-Fidelity Synthetic Invoice Generator (`generate_synthetic.py`):**
    - Engineered an automated generator producing **3,500 Arabic, English, and mixed invoices/receipts in the released dataset**.
    - Incorporates RTL support, Google Arabic fonts (Cairo, Amiri), Western and Arabic-Indic numerals, realistic business names, line items, and dynamic image degradations (blur, noise, perspective skew, low contrast, JPEG artifacts).
-   - **Correct-by-construction ground truth** eliminating human annotation errors.
+   - Ground-truth labels are generated alongside synthetic documents, reducing manual annotation needs. Synthetic labels should still undergo quality checks.
 
 4. **Dataset Validation & Quality Control (`validate_dataset.py`):**
    - Strict automated schema validation ensuring valid dates, positive amounts, unique `doc_id`s, and image integrity.
 
 5. **Leakage-Free Splitting (`create_splits.py` & `check_leakage.py`):**
-   - Stratified dataset split into **Train (80%)**, **Validation (15%)**, and **Test (5%)** with a fixed reproducible seed (`seed=42`).
+   - Released split proportions: **Train (61.6%)**, **Validation (11.0%)**, and **Test (27.4%)**. These are the actual v1.1 proportions, not an 80/15/5 split.
    - Cryptographic MD5 hash check confirming **0 cross-split duplicate images** or document-ID overlap.
-   - Holdout synthetic templates and real test sets reserved exclusively for final evaluation.
+   - Synthetic holdout templates are confined to the test split, which contains both synthetic and CORD records.
 
 6. **Exploratory Data Analysis & Reporting (`run_eda.py`):**
    - Automated profiling generating comprehensive distributions, token statistics, and visual charts.
@@ -168,10 +168,10 @@ The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipe
 
 ## 🔒 Verification & Definition of Done (v1)
 
-- [x] All document sources converted to single unified JSONL contract.
+- [x] All included v1.1 sources (CORD and synthetic documents) use the unified JSONL contract.
 - [x] `validate_dataset.py` returns **0 errors**.
 - [x] `check_leakage.py` confirms **0 cross-split duplicate images** and document-ID overlap.
-- [!] The checker also reports **26 same-split duplicate-image groups**. These are not cross-split leakage, but may inflate training metrics and should be considered during evaluation.
+- Same-split duplicate images, if present, may affect training or evaluation metrics. The latest leakage check confirmed zero cross-split image duplicates.
 - [x] Stratified splits generated (`data/splits/train.jsonl`, `val.jsonl`, `test.jsonl`).
 - [x] Synthetic Arabic/English dataset generated with full ground truth.
 - [x] Comprehensive documentation and license audit completed.
@@ -216,7 +216,7 @@ This subsystem is responsible for choosing, benchmarking and running the OCR eng
    | EasyOCR | 0.651 (0.599 to 0.703) | 0.517 | 1.26 |
    | Tesseract | 0.468 (0.412 to 0.522) | 0.200 | 3.47 |
 
-   - Surya leads on every language and on both real (CORD) and synthetic documents. Its interval does not overlap with the others, so the gap is real.
+   - Surya leads on every language and on both real (CORD) and synthetic documents. The reported intervals do not overlap. However, a paired statistical comparison is needed before interpreting the differences as statistically significant.
    - Routing (best engine per language and quality) was tested: 0.881 vs 0.877 for Surya alone. Not worth the extra complexity, so one engine is used for everything.
    - Cost: Surya is the slowest of the good engines. The original OCR run covered 4,500 documents before v1.1 filtering.
 

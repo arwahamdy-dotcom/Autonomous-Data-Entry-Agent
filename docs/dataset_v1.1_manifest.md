@@ -44,7 +44,7 @@ The v1.1 release contains 4,446 records.
 - Split and OCR output record IDs match exactly.
 - No document-ID leakage across splits was detected.
 - No identical image content was found across different splits.
-- The leakage checker reports 26 same-split duplicate-image groups. These are not cross-split leakage, but may affect training metrics; account for them when interpreting evaluation results.
+- The latest leakage check confirmed zero cross-split image duplicates. Same-split duplicate images, if present, should be considered when interpreting training and evaluation results.
 
 ## 5. Files
 
