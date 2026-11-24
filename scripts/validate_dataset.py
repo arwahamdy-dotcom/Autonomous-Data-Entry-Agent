@@ -1,190 +1,155 @@
-"""
-Validate a JSONL dataset file against the data contract.
+"""Validate JSONL dataset files against the project data contract.
 
-Checks:
-  - Required keys present
-  - language, source, quality in allowed sets
-  - Image exists and opens (PIL)
-  - doc_id is unique within the file
-  - ground_truth has exactly 4 keys, all strings
-  - Reports counts of empty fields per field
+Usage:
+    python scripts/validate_dataset.py data/splits/train.jsonl --check-images
+    python scripts/validate_dataset.py data/processed/*.jsonl
+    python scripts/validate_dataset.py --input_dir data/splits --check-images
 
-Usage (from Colab):
-    %cd /content/drive/MyDrive/data-entry-ds
-    !python scripts/validate_dataset.py data/processed/sroie.jsonl
-    !python scripts/validate_dataset.py data/processed/cord.jsonl
-    !python scripts/validate_dataset.py data/splits/train.jsonl --check-images
-
-    # Validate all processed files at once
-    !python scripts/validate_dataset.py data/processed/*.jsonl
-
-Exit codes:
-    0 = no errors
-    1 = errors found
+Exit codes: 0 = all supplied files passed; 1 = validation error or no input.
 """
 
-import sys
 import argparse
-from pathlib import Path
+import json
+import sys
 from collections import Counter
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from utils import read_jsonl, validate_record, GROUND_TRUTH_KEYS
+from utils import GROUND_TRUTH_KEYS, validate_record
 
 
 def validate_file(filepath: str, check_images: bool = False) -> dict:
-    """Validate a single JSONL file.
-    
-    Returns a summary dict with counts and errors.
-    """
-    filepath = Path(filepath)
-    print(f"\n{'=' * 60}")
-    print(f"Validating: {filepath}")
-    print(f"{'=' * 60}")
-
-    if not filepath.exists():
-        print(f"  ❌ File not found: {filepath}")
-        return {"file": str(filepath), "error": "file_not_found", "total_errors": 1}
-
-    records = read_jsonl(filepath)
-    print(f"  Records: {len(records)}")
+    """Validate one JSONL file; malformed lines are errors, never skipped."""
+    path = Path(filepath)
+    print(f"\n{'=' * 60}\nValidating: {path}\n{'=' * 60}")
+    if not path.is_file():
+        message = f"File not found: {path}"
+        print(f"  ERROR: {message}")
+        return {"file": str(path), "total_records": 0, "total_errors": 1,
+                "duplicate_ids": 0, "malformed_json_lines": 0,
+                "empty_fields": {}, "languages": {}, "sources": {},
+                "errors": [message]}
 
     errors = []
-    warnings = []
-    doc_ids = []
-    field_empty_counts = Counter()
-    lang_counts = Counter()
-    source_counts = Counter()
-    quality_counts = Counter()
+    records = 0
+    malformed_json_lines = 0
+    ids = []
+    empty_fields = Counter()
+    languages = Counter()
+    sources = Counter()
+    qualities = Counter()
 
-    for i, record in enumerate(records):
-        record_errors = validate_record(record, check_image=check_images)
-        if record_errors:
-            for err in record_errors:
-                errors.append(f"  Record {i} (doc_id={record.get('doc_id', '???')}): {err}")
+    with path.open("r", encoding="utf-8-sig") as stream:
+        for line_num, raw_line in enumerate(stream, start=1):
+            if not raw_line.strip():
+                continue
+            try:
+                record = json.loads(raw_line)
+            except json.JSONDecodeError as exc:
+                malformed_json_lines += 1
+                errors.append(f"Line {line_num}: malformed JSON: {exc.msg} (column {exc.colno})")
+                continue
 
-        # Track doc_ids for uniqueness
-        doc_id = record.get("doc_id", "")
-        if doc_id:
-            doc_ids.append(doc_id)
+            records += 1
+            record_errors = validate_record(record, check_image=check_images)
+            record_id = record.get("doc_id", "???") if isinstance(record, dict) else "???"
+            for message in record_errors:
+                errors.append(f"Line {line_num} (doc_id={record_id}): {message}")
 
-        # Count empty fields
-        gt = record.get("ground_truth", {})
-        for field in GROUND_TRUTH_KEYS:
-            if not gt.get(field, ""):
-                field_empty_counts[field] += 1
+            if not isinstance(record, dict):
+                continue
+            doc_id = record.get("doc_id")
+            if isinstance(doc_id, str) and doc_id:
+                ids.append((doc_id, line_num))
 
-        # Distribution counts
-        lang_counts[record.get("language", "unknown")] += 1
-        source_counts[record.get("source", "unknown")] += 1
-        quality_counts[record.get("quality", "unknown")] += 1
+            gt = record.get("ground_truth")
+            if isinstance(gt, dict):
+                for field in GROUND_TRUTH_KEYS:
+                    value = gt.get(field)
+                    if value == "":
+                        empty_fields[field] += 1
 
-    # Check uniqueness
+            for key, counter in (("language", languages),
+                                 ("source", sources),
+                                 ("quality", qualities)):
+                value = record.get(key, "unknown")
+                counter[value if isinstance(value, (str, int, float, bool)) else f"<{type(value).__name__}>"] += 1
+
     seen = set()
     duplicates = []
-    for doc_id in doc_ids:
+    for doc_id, line_num in ids:
         if doc_id in seen:
             duplicates.append(doc_id)
+            errors.append(f"Line {line_num}: duplicate doc_id {doc_id!r}")
         seen.add(doc_id)
 
-    if duplicates:
-        errors.append(f"  Duplicate doc_ids ({len(duplicates)}): {duplicates[:10]}")
-
-    # ── Report ──
-    total = len(records)
-
-    print(f"\n  --- Distribution ---")
-    print(f"  Languages: {dict(lang_counts.most_common())}")
-    print(f"  Sources:   {dict(source_counts.most_common())}")
-    print(f"  Quality:   {dict(quality_counts.most_common())}")
-
-    print(f"\n  --- Empty Fields ---")
-    for field in sorted(GROUND_TRUTH_KEYS):
-        empty = field_empty_counts[field]
-        pct = (empty / total * 100) if total > 0 else 0
-        bar = "█" * int(pct / 5) + "░" * (20 - int(pct / 5))
-        status = "⚠️" if pct > 50 else "✅"
-        print(f"  {status} {field:20s}: {empty:5d}/{total} ({pct:5.1f}%) {bar}")
-
-    print(f"\n  --- Unique IDs ---")
-    print(f"  Total doc_ids: {len(doc_ids)}")
-    print(f"  Unique doc_ids: {len(seen)}")
-    print(f"  Duplicates: {len(duplicates)}")
+    print(f"  Records parsed: {records}")
+    print(f"  Malformed JSON lines: {malformed_json_lines}")
+    print(f"  Languages: {dict(languages.most_common())}")
+    print(f"  Sources:   {dict(sources.most_common())}")
+    print(f"  Quality:   {dict(qualities.most_common())}")
+    print(f"  Unique document IDs: {len(seen)}")
+    print(f"  Duplicate ID rows: {len(duplicates)}")
+    print("  Empty ground-truth fields: " + str(dict(sorted(empty_fields.items()))))
 
     if errors:
-        print(f"\n  ❌ ERRORS ({len(errors)}):")
-        for err in errors[:50]:  # Show first 50
-            print(f"    {err}")
-        if len(errors) > 50:
-            print(f"    ... and {len(errors) - 50} more errors")
+        print(f"\n  ERRORS ({len(errors)}):")
+        for error in errors[:100]:
+            print(f"    {error}")
+        if len(errors) > 100:
+            print(f"    ... {len(errors) - 100} additional errors omitted")
     else:
-        print(f"\n  ✅ No errors found!")
+        print("  No errors found.")
 
     return {
-        "file": str(filepath),
-        "total_records": total,
-        "total_errors": len(errors),
-        "duplicate_ids": len(duplicates),
-        "empty_fields": dict(field_empty_counts),
-        "languages": dict(lang_counts),
-        "sources": dict(source_counts),
-        "errors": errors,
+        "file": str(path), "total_records": records,
+        "total_errors": len(errors), "duplicate_ids": len(duplicates),
+        "malformed_json_lines": malformed_json_lines,
+        "empty_fields": dict(empty_fields), "languages": dict(languages),
+        "sources": dict(sources), "errors": errors,
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Validate JSONL dataset files against the data contract"
-    )
-    parser.add_argument("files", nargs="*", default=None, help="JSONL files to validate")
-    parser.add_argument("--input_dir", type=str, default="data/processed", help="Directory containing JSONL files")
-    parser.add_argument("--check-images", action="store_true",
-                        help="Also verify that image files exist and open")
-    args, _ = parser.parse_known_args()
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Validate JSONL dataset files against the data contract")
+    parser.add_argument("files", nargs="*", help="JSONL files to validate")
+    parser.add_argument("--input_dir", default="data/processed", help="Default input directory when no files are supplied")
+    parser.add_argument("--check-images", action="store_true", help="Verify referenced images exist and decode")
+    args, _unknown = parser.parse_known_args(argv)
 
     files = args.files
     if not files:
-        input_p = Path(args.input_dir)
-        files = [str(f) for f in sorted(input_p.glob("*.jsonl"))]
+        files = [str(path) for path in sorted(Path(args.input_dir).glob("*.jsonl"))]
         if not files:
-            # Also check splits
-            files = [str(f) for f in sorted(Path("data/splits").glob("*.jsonl"))]
+            files = [str(path) for path in sorted(Path("data/splits").glob("*.jsonl"))]
+    if not files:
+        print("VALIDATION FAILED: no JSONL input files found; specify files or --input_dir.")
+        return 1
 
-    total_errors = 0
     results = []
-
-    for filepath in files:
-        path = Path(filepath)
-        if "*" in str(path):
-            matched = sorted(path.parent.glob(path.name))
-            for m in matched:
-                result = validate_file(str(m), check_images=args.check_images)
-                results.append(result)
-                total_errors += result.get("total_errors", 0)
+    for item in files:
+        path = Path(item)
+        if any(char in item for char in "*?["):
+            matches = sorted(path.parent.glob(path.name))
+            if not matches:
+                results.append(validate_file(item, check_images=args.check_images))
+            else:
+                results.extend(validate_file(str(match), check_images=args.check_images) for match in matches)
         else:
-            result = validate_file(filepath, check_images=args.check_images)
-            results.append(result)
-            total_errors += result.get("total_errors", 0)
+            results.append(validate_file(item, check_images=args.check_images))
 
-    # Final summary
-    print(f"\n{'=' * 60}")
-    print(f"VALIDATION SUMMARY")
-    print(f"{'=' * 60}")
+    total_records = sum(result["total_records"] for result in results)
+    total_errors = sum(result["total_errors"] for result in results)
+    print(f"\n{'=' * 60}\nVALIDATION SUMMARY\n{'=' * 60}")
     print(f"  Files checked: {len(results)}")
-    print(f"  Total errors:  {total_errors}")
-
-    for r in results:
-        status = "✅" if r.get("total_errors", 0) == 0 else "❌"
-        print(f"  {status} {r['file']}: {r.get('total_records', 0)} records, "
-              f"{r.get('total_errors', 0)} errors")
-
-    if total_errors > 0:
-        print(f"\n  ❌ VALIDATION FAILED with {total_errors} errors")
-        sys.exit(1)
-    else:
-        print(f"\n  ✅ ALL FILES PASSED VALIDATION")
-        sys.exit(0)
+    print(f"  Records parsed: {total_records}")
+    print(f"  Total errors: {total_errors}")
+    for result in results:
+        status = "PASS" if result["total_errors"] == 0 else "FAIL"
+        print(f"  {status}: {result['file']} ({result['total_records']} records, {result['total_errors']} errors)")
+    print("  RESULT: " + ("ALL FILES PASSED" if total_errors == 0 else "VALIDATION FAILED"))
+    return 1 if total_errors else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

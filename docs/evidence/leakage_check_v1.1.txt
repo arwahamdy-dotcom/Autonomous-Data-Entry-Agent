@@ -1,0 +1,37 @@
+============================================================
+DATA LEAKAGE CHECK
+============================================================
+  Checking 3 split files:
+    data/splits/train.jsonl
+    data/splits/val.jsonl
+    data/splits/test.jsonl
+
+  --- Check 1: doc_id uniqueness across splits ---
+    train: 2740 records
+    val: 488 records
+    test: 1218 records
+  ✅ No doc_id leakage
+
+  --- Check 2: Image content deduplication (MD5) ---
+  ✅ No cross-split image duplicates
+  Images checked: 4446, missing: 0
+
+  --- Check 3: Synthetic template holdout ---
+  ✅ Template holdout intact: 2 test-only templates reserved for evaluation:
+    - ar_commercial
+    - mixed_bilingual
+  Total synthetic templates: 8
+    ar_commercial: {'test'}
+    ar_formal: {'val', 'test', 'train'}
+    ar_receipt: {'val', 'test', 'train'}
+    en_modern: {'val', 'test', 'train'}
+    en_receipt: {'val', 'test', 'train'}
+    mixed_bilingual: {'test'}
+    mixed_corporate: {'val', 'test', 'train'}
+    mixed_receipt: {'val', 'test', 'train'}
+
+============================================================
+LEAKAGE CHECK SUMMARY
+============================================================
+
+  ✅ NO LEAKAGE DETECTED

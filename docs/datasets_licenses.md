@@ -1,7 +1,9 @@
 # Dataset Licenses and Citations
 
-> **Last Updated:** 2026-11-17
+> **Last Updated:** 2026-11-24
 > **Status:** v1.1 release inventory documented; license verification remains pending where indicated.
+
+The Person 1 closure audit inspected the external v1.1 archive and repository font references but found no authoritative license notices, exact font binary versions, or redistribution grants that resolve the pending items below. No commercial-use, redistribution, or sublicensing clearance is claimed.
 
 ---
 

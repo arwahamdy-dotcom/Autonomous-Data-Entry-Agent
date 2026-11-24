@@ -1,4 +1,6 @@
-# 📋 Data Lead Comprehensive Delivery Report (Dataset v1)
+# 📋 Data Lead Comprehensive Delivery Report (Dataset v1 — Historical)
+
+> **Historical snapshot, not the current v1.1 release report.** The 6,324-record totals and 3,888 / 486 / 1,826 split counts below describe an earlier Dataset v1 delivery and do not match the frozen v1.1 release. For current authoritative counts, archive identity, and verification evidence, see the [Dataset v1.1 Release Manifest](dataset_v1.1_manifest.md) and [Person 1 Audit Status](AUDIT_STATUS.md). The historical figures are preserved here for traceability, not as current delivery claims.
 
 **Project:** Autonomous Data Entry Agent — Arabic + English Invoice & Receipt Extraction  
 **Owner:** Data Lead  

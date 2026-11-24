@@ -1,0 +1,69 @@
+test_cli_no_input_fails_instead_of_reporting_success (test_validate_dataset.ValidateFileTests.test_cli_no_input_fails_instead_of_reporting_success) ... ok
+test_duplicate_ids_within_file_are_rejected (test_validate_dataset.ValidateFileTests.test_duplicate_ids_within_file_are_rejected) ... ok
+test_malformed_json_is_counted_as_error_not_skipped (test_validate_dataset.ValidateFileTests.test_malformed_json_is_counted_as_error_not_skipped) ... ok
+test_missing_input_file_fails (test_validate_dataset.ValidateFileTests.test_missing_input_file_fails) ... ok
+test_empty_date_and_total_strings_remain_allowed_by_contract (test_validate_dataset.ValidateRecordTests.test_empty_date_and_total_strings_remain_allowed_by_contract) ... ok
+test_invalid_enum_types_do_not_raise (test_validate_dataset.ValidateRecordTests.test_invalid_enum_types_do_not_raise) ... ok
+test_invalid_image_path_types_empty_and_parent_traversal (test_validate_dataset.ValidateRecordTests.test_invalid_image_path_types_empty_and_parent_traversal) ... ok
+test_missing_and_corrupt_images_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_and_corrupt_images_are_reported) ... ok
+test_missing_or_invalid_required_nested_contract_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_or_invalid_required_nested_contract_fields_are_reported) ... ok
+test_missing_required_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_required_fields_are_reported) ... ok
+test_non_object_json_values_are_reported_not_raised (test_validate_dataset.ValidateRecordTests.test_non_object_json_values_are_reported_not_raised) ... ok
+test_non_object_nested_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_non_object_nested_fields_are_reported) ... ok
+test_non_string_dates_and_totals_are_rejected (test_validate_dataset.ValidateRecordTests.test_non_string_dates_and_totals_are_rejected) ... ok
+test_patched_cord_requires_v11_label_version (test_validate_dataset.ValidateRecordTests.test_patched_cord_requires_v11_label_version) ... ok
+test_synthetic_record_may_omit_cord_patch_label_version (test_validate_dataset.ValidateRecordTests.test_synthetic_record_may_omit_cord_patch_label_version) ... ok
+test_template_font_metadata_matches_template_css (test_validate_dataset.ValidateRecordTests.test_template_font_metadata_matches_template_css) ... ok
+test_valid_cord_empty_non_total_ground_truth_is_allowed (test_validate_dataset.ValidateRecordTests.test_valid_cord_empty_non_total_ground_truth_is_allowed) ... ok
+test_valid_image_is_opened_and_verified (test_validate_dataset.ValidateRecordTests.test_valid_image_is_opened_and_verified) ... ok
+test_valid_record_and_contract_allowed_localized_values (test_validate_dataset.ValidateRecordTests.test_valid_record_and_contract_allowed_localized_values) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.117s
+
+OK
+
+============================================================
+Validating: /tmp/tmp0nd39ima/dupes.jsonl
+============================================================
+  Records parsed: 2
+  Malformed JSON lines: 0
+  Languages: {'ar': 2}
+  Sources:   {'synthetic': 2}
+  Quality:   {'clear': 2}
+  Unique document IDs: 1
+  Duplicate ID rows: 1
+  Empty ground-truth fields: {}
+
+  ERRORS (1):
+    Line 2: duplicate doc_id 'synthetic_train_00001'
+
+============================================================
+Validating: /tmp/tmp0lf6_x_6/bad.jsonl
+============================================================
+  Records parsed: 1
+  Malformed JSON lines: 1
+  Languages: {'unknown': 1}
+  Sources:   {'unknown': 1}
+  Quality:   {'unknown': 1}
+  Unique document IDs: 1
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {}
+
+  ERRORS (11):
+    Line 1 (doc_id=ok): Missing required key: image_path
+    Line 1 (doc_id=ok): Missing required key: language
+    Line 1 (doc_id=ok): Missing required key: source
+    Line 1 (doc_id=ok): Missing required key: quality
+    Line 1 (doc_id=ok): Missing required key: ground_truth
+    Line 1 (doc_id=ok): Missing required key: ocr
+    Line 1 (doc_id=ok): Missing required key: prediction
+    Line 1 (doc_id=ok): Missing required key: annotations
+    Line 1 (doc_id=ok): Missing required key: source_split
+    Line 1 (doc_id=ok): Missing required key: source_key
+    Line 2: malformed JSON: Expecting property name enclosed in double quotes (column 2)
+
+============================================================
+Validating: /definitely/missing/dataset.jsonl
+============================================================
+  ERROR: File not found: /definitely/missing/dataset.jsonl

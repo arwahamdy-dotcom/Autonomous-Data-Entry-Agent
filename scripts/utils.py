@@ -178,51 +178,106 @@ def compute_image_md5(path: str | Path) -> str:
 # ──────────────────────────────────────────────
 
 def validate_record(record: dict, check_image: bool = True) -> list[str]:
-    """Validate a single record against the data contract.
-    
-    Returns a list of error strings. Empty list means valid.
+    """Validate a record against the v1.1 data contract.
+
+    The contract permits empty ground-truth strings and preserves localized
+    date/amount display strings, so this function validates their types and
+    shape but does not impose a single date or currency format.
     """
+    if not isinstance(record, dict):
+        return [f"Record must be a JSON object, got {type(record).__name__}"]
+
     errors = []
-    
-    # Required top-level keys
-    required_keys = [
+    required_keys = (
         "doc_id", "image_path", "language", "source", "quality",
         "ground_truth", "ocr", "prediction", "annotations",
         "source_split", "source_key",
-    ]
+    )
     for key in required_keys:
         if key not in record:
             errors.append(f"Missing required key: {key}")
 
-    # Check allowed values
-    if record.get("language") not in ALLOWED_LANGUAGES:
-        errors.append(f"Invalid language: {record.get('language')}")
-    if record.get("source") not in ALLOWED_SOURCES:
-        errors.append(f"Invalid source: {record.get('source')}")
-    if record.get("quality") not in ALLOWED_QUALITIES:
-        errors.append(f"Invalid quality: {record.get('quality')}")
+    for key in ("doc_id", "image_path", "source_split", "source_key"):
+        if key in record and not isinstance(record[key], str):
+            errors.append(f"{key} must be string, got {type(record[key]).__name__}")
+    if isinstance(record.get("doc_id"), str) and not record["doc_id"].strip():
+        errors.append("doc_id must not be empty")
+    for key, allowed in (("language", ALLOWED_LANGUAGES),
+                         ("source", ALLOWED_SOURCES),
+                         ("quality", ALLOWED_QUALITIES)):
+        if key in record:
+            value = record[key]
+            if not isinstance(value, str) or value not in allowed:
+                errors.append(f"Invalid {key}: {value}")
 
-    # Check ground_truth structure
-    gt = record.get("ground_truth", {})
+    for key in ("ocr", "prediction", "annotations"):
+        if key in record and not isinstance(record[key], dict):
+            errors.append(f"{key} must be a dict, got {type(record[key]).__name__}")
+
+    gt = record.get("ground_truth")
     if not isinstance(gt, dict):
-        errors.append(f"ground_truth must be a dict, got {type(gt).__name__}")
+        if "ground_truth" in record:
+            errors.append(f"ground_truth must be a dict, got {type(gt).__name__}")
     else:
-        gt_keys = set(gt.keys())
+        gt_keys = set(gt)
         if gt_keys != GROUND_TRUTH_KEYS:
             missing = GROUND_TRUTH_KEYS - gt_keys
             extra = gt_keys - GROUND_TRUTH_KEYS
             if missing:
-                errors.append(f"ground_truth missing keys: {missing}")
+                errors.append(f"ground_truth missing keys: {sorted(missing)}")
             if extra:
-                errors.append(f"ground_truth has extra keys: {extra}")
-        for k, v in gt.items():
-            if not isinstance(v, str):
-                errors.append(f"ground_truth.{k} must be string, got {type(v).__name__}: {v}")
+                errors.append(f"ground_truth has extra keys: {sorted(extra)}")
+        for key, value in gt.items():
+            if not isinstance(value, str):
+                errors.append(f"ground_truth.{key} must be string, got {type(value).__name__}")
 
-    # Check image exists
-    if check_image and "image_path" in record:
-        img_path = Path(record["image_path"])
-        if not img_path.exists():
-            errors.append(f"Image not found: {record['image_path']}")
+    ocr = record.get("ocr")
+    if isinstance(ocr, dict):
+        if "engine" not in ocr:
+            errors.append("Missing required key: ocr.engine")
+        elif not isinstance(ocr["engine"], str):
+            errors.append("ocr.engine must be string")
+        if "words" not in ocr:
+            errors.append("Missing required key: ocr.words")
+        elif not isinstance(ocr["words"], list):
+            errors.append("ocr.words must be a list")
+
+    annotations = record.get("annotations")
+    if isinstance(annotations, dict):
+        for key in ("image_width", "image_height"):
+            value = annotations.get(key)
+            if key not in annotations:
+                errors.append(f"Missing required key: annotations.{key}")
+            elif isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                errors.append(f"annotations.{key} must be a positive integer")
+        label_version = annotations.get("label_version")
+        # The v1.1 patch added this marker to patched CORD records. Original
+        # synthetic records predate that patch and omit it in the frozen ZIP.
+        if record.get("source") == "cord" and "label_version" not in annotations:
+            errors.append("Missing required key: annotations.label_version")
+        elif "label_version" in annotations and (not isinstance(label_version, str) or label_version != "v1.1"):
+            errors.append("annotations.label_version must be 'v1.1'")
+
+    image_value = record.get("image_path")
+    if isinstance(image_value, str):
+        if not image_value.strip():
+            errors.append("image_path must not be empty")
+        else:
+            img_path = Path(image_value)
+            path_parts = image_value.replace("\\", "/").split("/")
+            if img_path.is_absolute() or image_value.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:[/\\]", image_value):
+                errors.append(f"Invalid image_path (must be relative): {image_value}")
+            elif ".." in path_parts:
+                errors.append(f"Invalid image_path (parent traversal): {image_value}")
+            elif check_image:
+                if not img_path.is_file():
+                    errors.append(f"Image not found: {image_value}")
+                else:
+                    try:
+                        from PIL import Image
+                        with Image.open(img_path) as image:
+                            image.verify()
+                    except Exception as exc:
+                        errors.append(f"Image is not readable: {image_value} ({type(exc).__name__}: {exc})")
 
     return errors

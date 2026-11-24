@@ -1,0 +1,202 @@
+=== CLEAN ENVIRONMENT ===
+Python 3.12.3
+=== INSTALL LOCK ===
+Collecting anyio==4.16.0 (from -r requirements.txt (line 3))
+  Using cached anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting arabic-reshaper==3.1.0 (from -r requirements.txt (line 4))
+  Using cached arabic_reshaper-3.1.0-py3-none-any.whl.metadata (13 kB)
+Collecting click==8.5.1 (from -r requirements.txt (line 5))
+  Using cached click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+Collecting contourpy==1.4.0 (from -r requirements.txt (line 6))
+  Using cached contourpy-1.4.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+Collecting cycler==0.12.1 (from -r requirements.txt (line 7))
+  Using cached cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+Collecting datasets==5.2.0 (from -r requirements.txt (line 8))
+  Using cached datasets-5.2.0-py3-none-any.whl.metadata (24 kB)
+Collecting dill==0.4.1 (from -r requirements.txt (line 9))
+  Using cached dill-0.4.1-py3-none-any.whl.metadata (10 kB)
+Collecting Faker==40.63.0 (from -r requirements.txt (line 10))
+  Using cached faker-40.63.0-py3-none-any.whl.metadata (16 kB)
+Collecting filelock==4.3.1 (from -r requirements.txt (line 11))
+  Using cached filelock-4.3.1-py3-none-any.whl.metadata (2.3 kB)
+Collecting fonttools==4.68.0 (from -r requirements.txt (line 12))
+  Using cached fonttools-4.68.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (139 kB)
+Collecting fsspec==2026.9.0 (from -r requirements.txt (line 13))
+  Using cached fsspec-2026.9.0-py3-none-any.whl.metadata (10 kB)
+Collecting greenlet==3.5.6 (from -r requirements.txt (line 14))
+  Using cached greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+Collecting h11==0.16.0 (from -r requirements.txt (line 15))
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting hf-xet==1.8.0 (from -r requirements.txt (line 16))
+  Using cached hf_xet-1.8.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Collecting httpcore2==2.16.2 (from -r requirements.txt (line 17))
+  Using cached httpcore2-2.16.2-py3-none-any.whl.metadata (28 kB)
+Collecting httpx2==2.16.2 (from -r requirements.txt (line 18))
+  Using cached httpx2-2.16.2-py3-none-any.whl.metadata (10.0 kB)
+Collecting huggingface_hub==2.4.0 (from -r requirements.txt (line 19))
+  Using cached huggingface_hub-2.4.0-py3-none-any.whl.metadata (16 kB)
+Collecting idna==3.20 (from -r requirements.txt (line 20))
+  Using cached idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting kiwisolver==1.5.1 (from -r requirements.txt (line 21))
+  Using cached kiwisolver-1.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.2 kB)
+Collecting matplotlib==3.11.2 (from -r requirements.txt (line 22))
+  Using cached matplotlib-3.11.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (80 kB)
+Collecting multiprocess==0.70.19 (from -r requirements.txt (line 23))
+  Using cached multiprocess-0.70.19-py312-none-any.whl.metadata (7.5 kB)
+Collecting numpy==2.5.5 (from -r requirements.txt (line 24))
+  Using cached numpy-2.5.5-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting opencv-python==5.1.0.95 (from -r requirements.txt (line 25))
+  Using cached opencv_python-5.1.0.95-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (20 kB)
+Collecting packaging==26.4 (from -r requirements.txt (line 26))
+  Using cached packaging-26.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting pandas==3.1.1 (from -r requirements.txt (line 27))
+  Using cached pandas-3.1.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (16 kB)
+Collecting pillow==13.0.0 (from -r requirements.txt (line 28))
+  Using cached pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+Collecting pip==26.3 (from -r requirements.txt (line 29))
+  Using cached pip-26.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting playwright==1.65.2 (from -r requirements.txt (line 30))
+  Using cached playwright-1.65.2-py3-none-manylinux1_x86_64.whl.metadata (3.3 kB)
+Collecting pyarrow==26.0.1 (from -r requirements.txt (line 31))
+  Using cached pyarrow-26.0.1-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (3.0 kB)
+Collecting pyparsing==3.3.3 (from -r requirements.txt (line 32))
+  Using cached pyparsing-3.3.3-py3-none-any.whl.metadata (5.9 kB)
+Collecting python-bidi==0.6.12 (from -r requirements.txt (line 33))
+  Using cached python_bidi-0.6.12-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.3 kB)
+Collecting python-dateutil==4.0.0 (from -r requirements.txt (line 34))
+  Using cached python_dateutil-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting PyYAML==6.0.4 (from -r requirements.txt (line 35))
+  Using cached pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+Collecting tqdm==4.70.1 (from -r requirements.txt (line 36))
+  Using cached tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+Collecting truststore==0.10.5 (from -r requirements.txt (line 37))
+  Using cached truststore-0.10.5-py3-none-any.whl.metadata (4.5 kB)
+Collecting typing_extensions==4.16.0 (from -r requirements.txt (line 38))
+  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting tzdata==2026.6 (from -r requirements.txt (line 39))
+  Using cached tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting xxhash==4.1.0 (from -r requirements.txt (line 40))
+  Using cached xxhash-4.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (18 kB)
+Using cached anyio-4.16.0-py3-none-any.whl (134 kB)
+Using cached arabic_reshaper-3.1.0-py3-none-any.whl (20 kB)
+Using cached click-8.5.1-py3-none-any.whl (126 kB)
+Using cached contourpy-1.4.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (383 kB)
+Using cached cycler-0.12.1-py3-none-any.whl (8.3 kB)
+Using cached datasets-5.2.0-py3-none-any.whl (608 kB)
+Using cached dill-0.4.1-py3-none-any.whl (120 kB)
+Using cached faker-40.63.0-py3-none-any.whl (2.1 MB)
+Using cached filelock-4.3.1-py3-none-any.whl (244 kB)
+Using cached fonttools-4.68.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.4 MB)
+Using cached fsspec-2026.9.0-py3-none-any.whl (221 kB)
+Using cached greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Using cached hf_xet-1.8.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.3 MB)
+Using cached httpcore2-2.16.2-py3-none-any.whl (85 kB)
+Using cached httpx2-2.16.2-py3-none-any.whl (97 kB)
+Using cached huggingface_hub-2.4.0-py3-none-any.whl (857 kB)
+Using cached idna-3.20-py3-none-any.whl (69 kB)
+Using cached kiwisolver-1.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.5 MB)
+Using cached matplotlib-3.11.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (9.9 MB)
+Using cached multiprocess-0.70.19-py312-none-any.whl (150 kB)
+Using cached numpy-2.5.5-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (15.7 MB)
+Using cached opencv_python-5.1.0.95-cp37-abi3-manylinux_2_28_x86_64.whl (79.2 MB)
+Using cached packaging-26.4-py3-none-any.whl (140 kB)
+Using cached pandas-3.1.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.0 MB)
+Using cached pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
+Using cached pip-26.3-py3-none-any.whl (2.0 MB)
+Using cached playwright-1.65.2-py3-none-manylinux1_x86_64.whl (53.5 MB)
+Using cached pyarrow-26.0.1-cp312-cp312-manylinux_2_28_x86_64.whl (55.0 MB)
+Using cached pyparsing-3.3.3-py3-none-any.whl (126 kB)
+Using cached python_bidi-0.6.12-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (296 kB)
+Using cached python_dateutil-4.0.0-py3-none-any.whl (92 kB)
+Using cached pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (849 kB)
+Using cached tqdm-4.70.1-py3-none-any.whl (80 kB)
+Using cached truststore-0.10.5-py3-none-any.whl (19 kB)
+Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Using cached tzdata-2026.6-py2.py3-none-any.whl (348 kB)
+Using cached xxhash-4.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (472 kB)
+Installing collected packages: xxhash, tzdata, typing_extensions, truststore, tqdm, PyYAML, python-bidi, pyparsing, pyarrow, pip, pillow, packaging, numpy, kiwisolver, idna, hf-xet, h11, greenlet, fsspec, fonttools, filelock, Faker, dill, cycler, click, arabic-reshaper, python-dateutil, playwright, opencv-python, multiprocess, httpcore2, contourpy, anyio, pandas, matplotlib, httpx2, huggingface_hub, datasets
+  Attempting uninstall: pip
+    Found existing installation: pip 24.0
+    Uninstalling pip-24.0:
+      Successfully uninstalled pip-24.0
+Successfully installed Faker-40.63.0 PyYAML-6.0.4 anyio-4.16.0 arabic-reshaper-3.1.0 click-8.5.1 contourpy-1.4.0 cycler-0.12.1 datasets-5.2.0 dill-0.4.1 filelock-4.3.1 fonttools-4.68.0 fsspec-2026.9.0 greenlet-3.5.6 h11-0.16.0 hf-xet-1.8.0 httpcore2-2.16.2 httpx2-2.16.2 huggingface_hub-2.4.0 idna-3.20 kiwisolver-1.5.1 matplotlib-3.11.2 multiprocess-0.70.19 numpy-2.5.5 opencv-python-5.1.0.95 packaging-26.4 pandas-3.1.1 pillow-13.0.0 pip-26.3 playwright-1.65.2 pyarrow-26.0.1 pyparsing-3.3.3 python-bidi-0.6.12 python-dateutil-4.0.0 tqdm-4.70.1 truststore-0.10.5 typing_extensions-4.16.0 tzdata-2026.6 xxhash-4.1.0
+=== PIP CHECK ===
+No broken requirements found.
+=== IMPORT SMOKE TEST ===
+Pillow 13.0.0
+datasets 5.2.0
+huggingface_hub 2.4.0
+opencv-python 5.1.0
+numpy 2.5.5
+All declared pipeline imports: PASS
+=== REGRESSION SUITE ===
+test_cli_no_input_fails_instead_of_reporting_success (test_validate_dataset.ValidateFileTests.test_cli_no_input_fails_instead_of_reporting_success) ... ok
+test_duplicate_ids_within_file_are_rejected (test_validate_dataset.ValidateFileTests.test_duplicate_ids_within_file_are_rejected) ... ok
+test_malformed_json_is_counted_as_error_not_skipped (test_validate_dataset.ValidateFileTests.test_malformed_json_is_counted_as_error_not_skipped) ... ok
+test_missing_input_file_fails (test_validate_dataset.ValidateFileTests.test_missing_input_file_fails) ... ok
+test_empty_date_and_total_strings_remain_allowed_by_contract (test_validate_dataset.ValidateRecordTests.test_empty_date_and_total_strings_remain_allowed_by_contract) ... ok
+test_invalid_enum_types_do_not_raise (test_validate_dataset.ValidateRecordTests.test_invalid_enum_types_do_not_raise) ... ok
+test_invalid_image_path_types_empty_and_parent_traversal (test_validate_dataset.ValidateRecordTests.test_invalid_image_path_types_empty_and_parent_traversal) ... ok
+test_missing_and_corrupt_images_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_and_corrupt_images_are_reported) ... ok
+test_missing_or_invalid_required_nested_contract_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_or_invalid_required_nested_contract_fields_are_reported) ... ok
+test_missing_required_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_missing_required_fields_are_reported) ... ok
+test_non_object_json_values_are_reported_not_raised (test_validate_dataset.ValidateRecordTests.test_non_object_json_values_are_reported_not_raised) ... ok
+test_non_object_nested_fields_are_reported (test_validate_dataset.ValidateRecordTests.test_non_object_nested_fields_are_reported) ... ok
+test_non_string_dates_and_totals_are_rejected (test_validate_dataset.ValidateRecordTests.test_non_string_dates_and_totals_are_rejected) ... ok
+test_patched_cord_requires_v11_label_version (test_validate_dataset.ValidateRecordTests.test_patched_cord_requires_v11_label_version) ... ok
+test_synthetic_record_may_omit_cord_patch_label_version (test_validate_dataset.ValidateRecordTests.test_synthetic_record_may_omit_cord_patch_label_version) ... ok
+test_template_font_metadata_matches_template_css (test_validate_dataset.ValidateRecordTests.test_template_font_metadata_matches_template_css) ... ok
+test_valid_cord_empty_non_total_ground_truth_is_allowed (test_validate_dataset.ValidateRecordTests.test_valid_cord_empty_non_total_ground_truth_is_allowed) ... ok
+test_valid_image_is_opened_and_verified (test_validate_dataset.ValidateRecordTests.test_valid_image_is_opened_and_verified) ... ok
+test_valid_record_and_contract_allowed_localized_values (test_validate_dataset.ValidateRecordTests.test_valid_record_and_contract_allowed_localized_values) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.054s
+
+OK
+
+============================================================
+Validating: /tmp/tmpj08x70uz/dupes.jsonl
+============================================================
+  Records parsed: 2
+  Malformed JSON lines: 0
+  Languages: {'ar': 2}
+  Sources:   {'synthetic': 2}
+  Quality:   {'clear': 2}
+  Unique document IDs: 1
+  Duplicate ID rows: 1
+  Empty ground-truth fields: {}
+
+  ERRORS (1):
+    Line 2: duplicate doc_id 'synthetic_train_00001'
+
+============================================================
+Validating: /tmp/tmprscqvic8/bad.jsonl
+============================================================
+  Records parsed: 1
+  Malformed JSON lines: 1
+  Languages: {'unknown': 1}
+  Sources:   {'unknown': 1}
+  Quality:   {'unknown': 1}
+  Unique document IDs: 1
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {}
+
+  ERRORS (11):
+    Line 1 (doc_id=ok): Missing required key: image_path
+    Line 1 (doc_id=ok): Missing required key: language
+    Line 1 (doc_id=ok): Missing required key: source
+    Line 1 (doc_id=ok): Missing required key: quality
+    Line 1 (doc_id=ok): Missing required key: ground_truth
+    Line 1 (doc_id=ok): Missing required key: ocr
+    Line 1 (doc_id=ok): Missing required key: prediction
+    Line 1 (doc_id=ok): Missing required key: annotations
+    Line 1 (doc_id=ok): Missing required key: source_split
+    Line 1 (doc_id=ok): Missing required key: source_key
+    Line 2: malformed JSON: Expecting property name enclosed in double quotes (column 2)
+
+============================================================
+Validating: /definitely/missing/dataset.jsonl
+============================================================
+  ERROR: File not found: /definitely/missing/dataset.jsonl

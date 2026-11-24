@@ -63,6 +63,22 @@ QUALITY_DIST = {"clear": 0.40, "blurry": 0.20, "tilted": 0.20, "noisy": 0.20}
 # Arabic-Indic digit ratio for Arabic docs
 ARABIC_INDIC_RATIO = 0.30
 
+TEMPLATE_FONT_FAMILIES = {
+    "en_modern": "Inter",
+    "en_receipt": "Courier New",
+    "ar_formal": "Cairo",
+    "ar_receipt": "Amiri",
+    "ar_commercial": "Noto Naskh Arabic",
+    "mixed_bilingual": "Cairo + Inter",
+    "mixed_receipt": "Cairo",
+    "mixed_corporate": "Cairo + Inter",
+}
+
+
+def font_annotation_for_template(template_id: str) -> str:
+    """Return the declared CSS font family/stack for a known template."""
+    return TEMPLATE_FONT_FAMILIES.get(template_id, "unknown")
+
 # ──────────────────────────────────────────────
 # Arabic-Indic Digit Conversion
 # ──────────────────────────────────────────────
@@ -927,7 +943,7 @@ def generate_document(index: int, template_id: str, template: dict,
         "prediction": {},
         "annotations": {
             "template_id": template_id,
-            "font": "Cairo" if lang in ("ar", "mixed") else "Inter",
+            "font": font_annotation_for_template(template_id),
             "seed": SEED + index,
             "degradations": [],  # filled after rendering
             "locale": "ar_EG" if lang == "ar" else "en_US" if lang == "en" else "mixed",

@@ -41,7 +41,8 @@ As the **Data Lead**, the following end-to-end data engineering pipeline has bee
    - Ground-truth labels are generated alongside synthetic documents, reducing manual annotation needs. Synthetic labels should still undergo quality checks.
 
 4. **Dataset Validation & Quality Control (`validate_dataset.py`):**
-   - Strict automated schema validation ensuring valid dates, positive amounts, unique `doc_id`s, and image integrity.
+   - Checks JSONL syntax, contract field types, allowed metadata values, ground-truth structure, unique `doc_id`s within each file, and (when requested) that referenced images decode.
+   - Dates and totals remain localized display strings under the frozen contract; the validator does not normalize or semantically parse them.
 
 5. **Leakage-Free Splitting (`create_splits.py` & `check_leakage.py`):**
    - Released split proportions: **Train (61.6%)**, **Validation (11.0%)**, and **Test (27.4%)**. These are the actual v1.1 proportions, not an 80/15/5 split.
@@ -55,7 +56,7 @@ As the **Data Lead**, the following end-to-end data engineering pipeline has bee
 
 ## Dataset v1.1 — Released Dataset Status
 
-See the [Dataset v1.1 Release Manifest](docs/dataset_v1.1_manifest.md) for the complete release inventory, validation results, and exclusions.
+See the [Dataset v1.1 Release Manifest](docs/dataset_v1.1_manifest.md) for the release inventory, and the [Person 1 Audit Status](docs/AUDIT_STATUS.md) for reproducible closure evidence. Arabic-Indic counts and font-annotation limitations are documented in [`docs/arabic_indic_audit.md`](docs/arabic_indic_audit.md) and [`docs/font_annotation_audit.md`](docs/font_annotation_audit.md).
 
 
 The patched v1.1 dataset contains **4,446 retained documents**:
@@ -66,6 +67,8 @@ The patched v1.1 dataset contains **4,446 retained documents**:
 | Validation | 121 | 367 | 488 |
 | Test | 44 | 1,174 | 1,218 |
 | **Total** | **946** | **3,500** | **4,446** |
+
+The corresponding split percentages are **61.63% train / 10.98% validation / 27.40% test**. The independently audited archive filename, SHA-256, and verification output are recorded in the [release manifest](docs/dataset_v1.1_manifest.md) and [audit status](docs/AUDIT_STATUS.md).
 
 **CORD annotation policy:** Only the total is retained from the original CORD annotations. Supplier, date, and invoice number are blank. CORD records have `quality="unassessed"` and `annotations.origin_language="id"`. Twenty-eight CORD records without an annotated total were excluded.
 
@@ -152,6 +155,8 @@ Every document in our dataset follows this exact JSON structure:
 
 The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipeline.ipynb)**:
 
+For a local Python 3.12 environment, install the locked data-pipeline dependencies with `python -m pip install -r requirements.txt`. The lock covers the repository's data processing, generation, and EDA dependencies; OCR engines and their system/GPU-specific runtimes remain optional and are installed by the corresponding OCR notebook mode. Install the Playwright browser with `python -m playwright install chromium` when running synthetic rendering.
+
 1. Upload the `data-entry-ds` folder to your **Google Drive**.
 2. Open `Data_Lead_Pipeline.ipynb` with **Google Colaboratory**.
 3. Run the cells sequentially:
@@ -174,7 +179,7 @@ The entire pipeline is packaged in **[`Data_Lead_Pipeline.ipynb`](Data_Lead_Pipe
 - Same-split duplicate images, if present, may affect training or evaluation metrics. The latest leakage check confirmed zero cross-split image duplicates.
 - [x] Stratified splits generated (`data/splits/train.jsonl`, `val.jsonl`, `test.jsonl`).
 - [x] Synthetic Arabic/English dataset generated with full ground truth.
-- [x] Comprehensive documentation and license audit completed.
+- [x] Dataset inventory and license limitations documented; **license clearance remains unresolved** for CORD terms and third-party font/asset permissions.
 
 ## License
 

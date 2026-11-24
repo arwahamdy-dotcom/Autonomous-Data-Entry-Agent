@@ -2,6 +2,17 @@
 
 All notable dataset and documentation changes are recorded here.
 
+## [Unreleased] — Person 1 closure remediation
+
+- Hardened JSONL validation so malformed lines and non-object records fail explicitly; image checking now verifies that images decode, and path traversal is rejected.
+- Added permanent validator and template-font metadata regression tests.
+- Added a Python 3.12 dependency input and fully resolved lock for data processing, validation, generation, and EDA. OCR model engines remain optional and environment-specific.
+- Added reproducible archive, split-count, image-reference, ID-uniqueness, and Arabic-Indic denominator auditing. The supplied release archive was not modified.
+- Recorded the observed Arabic-Indic rate with both denominators; the higher-than-configured Arabic-subset rate remains unexplained pending generation provenance.
+- Corrected future synthetic font metadata to reflect template CSS family/stack and documented that existing v1.1 archive annotations were not rewritten.
+- Labeled the old Dataset v1 delivery report as historical and corrected README claims about validator guarantees and license clearance.
+- Added closure evidence files after executing tests and release-data validation.
+
 ## [1.1.0] — 2026-11-17
 
 ### Dataset changes

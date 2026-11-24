@@ -34,6 +34,8 @@ SROIE, CORU / ReceiptSense, HF Invoices, FUNSD, and separately collected real do
 | Whitespace | Preserve internal whitespace; trim leading/trailing whitespace |
 | Ground-truth structure | Exactly four keys: `invoice_number`, `date`, `supplier`, `total` |
 
+**Validator interpretation (no schema change):** all four values must be strings, and an empty string is valid when a value is unavailable. The v1.1 contract does not define one canonical date format or numeric/currency grammar. Preserve localized display strings (including Arabic-Indic digits and currency symbols); validation therefore checks types and structure rather than parsing or normalizing dates and totals. A non-string value such as `null` or a JSON number is invalid.
+
 ### CORD v1.1 annotation policy
 
 CORD records use a restricted annotation policy:
@@ -127,6 +129,8 @@ This example is taken from an actual retained CORD record.
 | `source_key` | string | Yes | Original source key or identifier |
 
 ### Required v1.1 Annotation Metadata
+
+`image_width` and `image_height` are required on every retained v1.1 record. The `label_version` marker is required on records patched for v1.1 (the retained CORD records) and must be `v1.1` when present. The original synthetic records in the frozen handoff predate that CORD-specific patch and do not carry `annotations.label_version`; they are not retroactively rewritten. This scope follows the release patch history and the supplied archive.
 
 | Field | Type | Description |
 |---|---|---|

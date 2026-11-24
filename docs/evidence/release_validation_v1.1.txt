@@ -1,0 +1,92 @@
+
+============================================================
+Validating: data/splits/train.jsonl
+============================================================
+  Records parsed: 2740
+  Malformed JSON lines: 0
+  Languages: {'ar': 1053, 'en': 1052, 'mixed': 635}
+  Sources:   {'synthetic': 1959, 'cord': 781}
+  Quality:   {'unassessed': 781, 'clear': 771, 'noisy': 423, 'blurry': 410, 'tilted': 355}
+  Unique document IDs: 2740
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 781, 'invoice_number': 781, 'supplier': 781}
+  No errors found.
+
+============================================================
+Validating: data/splits/val.jsonl
+============================================================
+  Records parsed: 488
+  Malformed JSON lines: 0
+  Languages: {'ar': 197, 'en': 172, 'mixed': 119}
+  Sources:   {'synthetic': 367, 'cord': 121}
+  Quality:   {'clear': 134, 'unassessed': 121, 'tilted': 81, 'noisy': 78, 'blurry': 74}
+  Unique document IDs: 488
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 121, 'invoice_number': 121, 'supplier': 121}
+  No errors found.
+
+============================================================
+Validating: data/splits/test.jsonl
+============================================================
+  Records parsed: 1218
+  Malformed JSON lines: 0
+  Languages: {'ar': 720, 'mixed': 437, 'en': 61}
+  Sources:   {'synthetic': 1174, 'cord': 44}
+  Quality:   {'clear': 473, 'noisy': 247, 'tilted': 227, 'blurry': 227, 'unassessed': 44}
+  Unique document IDs: 1218
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 44, 'invoice_number': 44, 'supplier': 44}
+  No errors found.
+
+============================================================
+Validating: ocr_output/train_with_ocr.jsonl
+============================================================
+  Records parsed: 2740
+  Malformed JSON lines: 0
+  Languages: {'ar': 1053, 'en': 1052, 'mixed': 635}
+  Sources:   {'synthetic': 1959, 'cord': 781}
+  Quality:   {'unassessed': 781, 'clear': 771, 'noisy': 423, 'blurry': 410, 'tilted': 355}
+  Unique document IDs: 2740
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 781, 'invoice_number': 781, 'supplier': 781}
+  No errors found.
+
+============================================================
+Validating: ocr_output/val_with_ocr.jsonl
+============================================================
+  Records parsed: 488
+  Malformed JSON lines: 0
+  Languages: {'ar': 197, 'en': 172, 'mixed': 119}
+  Sources:   {'synthetic': 367, 'cord': 121}
+  Quality:   {'clear': 134, 'unassessed': 121, 'tilted': 81, 'noisy': 78, 'blurry': 74}
+  Unique document IDs: 488
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 121, 'invoice_number': 121, 'supplier': 121}
+  No errors found.
+
+============================================================
+Validating: ocr_output/test_with_ocr.jsonl
+============================================================
+  Records parsed: 1218
+  Malformed JSON lines: 0
+  Languages: {'ar': 720, 'mixed': 437, 'en': 61}
+  Sources:   {'synthetic': 1174, 'cord': 44}
+  Quality:   {'clear': 473, 'noisy': 247, 'tilted': 227, 'blurry': 227, 'unassessed': 44}
+  Unique document IDs: 1218
+  Duplicate ID rows: 0
+  Empty ground-truth fields: {'date': 44, 'invoice_number': 44, 'supplier': 44}
+  No errors found.
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+  Files checked: 6
+  Records parsed: 8892
+  Total errors: 0
+  PASS: data/splits/train.jsonl (2740 records, 0 errors)
+  PASS: data/splits/val.jsonl (488 records, 0 errors)
+  PASS: data/splits/test.jsonl (1218 records, 0 errors)
+  PASS: ocr_output/train_with_ocr.jsonl (2740 records, 0 errors)
+  PASS: ocr_output/val_with_ocr.jsonl (488 records, 0 errors)
+  PASS: ocr_output/test_with_ocr.jsonl (1218 records, 0 errors)
+  RESULT: ALL FILES PASSED

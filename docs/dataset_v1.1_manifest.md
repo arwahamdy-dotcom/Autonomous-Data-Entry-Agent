@@ -5,6 +5,8 @@
 **Status:** Patched and validated
 **Storage:** External to this Git repository (Google Drive)
 
+The authoritative handoff inspected for the Person 1 closure audit is **`OCR_Dataset_v1.1_Full_Handoff.zip`** (454,814,485 bytes; approximately 434 MiB). Its SHA-256 is `0f7adb93c6617e47081b0dffbb4dd3d4a40106bcc22751d93bfedfe04cfc3608`. The archive remains external and was not modified. Reproduce the check with `python scripts/audit_release_archive.py /path/to/OCR_Dataset_v1.1_Full_Handoff.zip --expected-sha256 0f7adb93c6617e47081b0dffbb4dd3d4a40106bcc22751d93bfedfe04cfc3608`.
+
 ## 1. Dataset composition
 
 The v1.1 release contains 4,446 records.
@@ -15,6 +17,13 @@ The v1.1 release contains 4,446 records.
 | Validation | 121 | 367 | 488 |
 | Test | 44 | 1,174 | 1,218 |
 | **Total** | **946** | **3,500** | **4,446** |
+
+| Split | Records | Share of total |
+|---|---:|---:|
+| Train | 2,740 | 61.63% |
+| Validation | 488 | 10.98% |
+| Test | 1,218 | 27.40% |
+| **Total** | **4,446** | **100.00%** |
 
 ## 2. Included sources
 
@@ -38,9 +47,10 @@ The v1.1 release contains 4,446 records.
 
 ## 4. Validation results
 
-- All three split JSONL files passed dataset validation with zero errors.
-- All three OCR output JSONL files passed dataset validation with zero errors.
-- All referenced images in the six validated JSONL files were found and opened successfully.
+- The closure audit independently parsed all three canonical split JSONL files and checked their records, unique IDs, source totals, image references, archive CRCs, and archive SHA-256.
+- Every canonical split image reference resolves. The ZIP also retains 86 image members unused by canonical split records: 54 under `data/processed/images` and 32 under `data/review/dup_pairs`. These were not modified and are distinct from missing references.
+- The updated validator is run against the canonical split files and their three OCR output counterparts with image decoding enabled; its complete output is retained at `docs/evidence/release_validation_v1.1.txt`.
+- The archive audit summary and reproducible command output are retained at `docs/evidence/archive_audit_v1.1.json`.
 - Split and OCR output record IDs match exactly.
 - No document-ID leakage across splits was detected.
 - No identical image content was found across different splits.
@@ -62,6 +72,8 @@ Expected data artifacts:
 
 The repository contains the validation and leakage-check scripts used to verify these artifacts.
 
+The ZIP also includes historical `.bak`, `.pre_dedupe.bak`, and `.v1_0.bak` files. These are retained as archive contents but are not canonical v1.1 split inputs. Only the exact paths listed above are the release split files.
+
 ## 6. Exclusions
 
 SROIE, CORU / ReceiptSense, Hugging Face Invoices, FUNSD, and separately collected real documents are not included in this v1.1 release.
@@ -71,6 +83,9 @@ SROIE, CORU / ReceiptSense, Hugging Face Invoices, FUNSD, and separately collect
 - [README](../README.md)
 - [Data Contract](data_contract.md)
 - [Dataset License Inventory](datasets_licenses.md)
+- [Person 1 Audit Status](AUDIT_STATUS.md)
+- [Arabic-Indic Digit Audit](arabic_indic_audit.md)
+- [Synthetic Font Annotation Audit](font_annotation_audit.md)
 - [Changelog](../CHANGELOG.md)
 
 **License note:** Refer to `datasets_licenses.md`. CORD licensing and synthetic-font redistribution permissions remain subject to verification. This manifest does not grant additional usage rights.

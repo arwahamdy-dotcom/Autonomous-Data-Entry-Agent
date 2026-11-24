@@ -1,0 +1,114 @@
+{
+  "archive": "OCR_Dataset_v1.1_Full_Handoff.zip",
+  "sha256": "0f7adb93c6617e47081b0dffbb4dd3d4a40106bcc22751d93bfedfe04cfc3608",
+  "expected_sha256": "0f7adb93c6617e47081b0dffbb4dd3d4a40106bcc22751d93bfedfe04cfc3608",
+  "zip_members": 4563,
+  "image_members": 4532,
+  "zip_crc": "PASS",
+  "path_traversal_members": 0,
+  "split_records": {
+    "train": 2740,
+    "val": 488,
+    "test": 1218
+  },
+  "total_split_records": 4446,
+  "ocr_output_records": {
+    "train": 2740,
+    "val": 488,
+    "test": 1218
+  },
+  "ocr_output_id_comparison": {
+    "train": {
+      "missing": 0,
+      "extra": 0,
+      "match": true
+    },
+    "val": {
+      "missing": 0,
+      "extra": 0,
+      "match": true
+    },
+    "test": {
+      "missing": 0,
+      "extra": 0,
+      "match": true
+    }
+  },
+  "source_counts": {
+    "cord": 946,
+    "synthetic": 3500
+  },
+  "language_counts": {
+    "ar": 1970,
+    "en": 1285,
+    "mixed": 1191
+  },
+  "unique_doc_ids": 4446,
+  "duplicate_doc_ids": 0,
+  "missing_image_references": 0,
+  "unreferenced_image_members": 86,
+  "unreferenced_image_members_by_directory": {
+    "OCR dataset v1/data/processed/images": 54,
+    "OCR dataset v1/data/review/dup_pairs": 32
+  },
+  "schema_errors": 0,
+  "schema_error_examples": [],
+  "arabic_indic_flag_vs_text_mismatches": 0,
+  "arabic_indic_flag_counts_by_language": {
+    "ar/flag=False": 894,
+    "ar/flag=True": 1076,
+    "en/flag=False": 339,
+    "mixed/flag=False": 1191
+  },
+  "arabic_indic_text_counts_by_language": {
+    "ar/text=False": 894,
+    "ar/text=True": 1076,
+    "en/text=False": 339,
+    "mixed/text=False": 1191
+  },
+  "arabic_indic_rate_among_ar_records_percent": 54.6193,
+  "arabic_indic_rate_among_all_synthetic_percent": 30.7429,
+  "template_font_annotations": {
+    "<missing>": {
+      "<missing>": 946
+    },
+    "ar_commercial": {
+      "Cairo": 654
+    },
+    "ar_formal": {
+      "Cairo": 652
+    },
+    "ar_receipt": {
+      "Cairo": 664
+    },
+    "en_modern": {
+      "Inter": 173
+    },
+    "en_receipt": {
+      "Inter": 166
+    },
+    "mixed_bilingual": {
+      "Cairo": 397
+    },
+    "mixed_corporate": {
+      "Cairo": 412
+    },
+    "mixed_receipt": {
+      "Cairo": 382
+    }
+  },
+  "label_versions_by_source": {
+    "cord": {
+      "v1.1": 946
+    },
+    "synthetic": {
+      "<missing>": 3500
+    }
+  },
+  "holdout_template_counts": {
+    "test/ar_commercial": 654,
+    "test/mixed_bilingual": 397
+  },
+  "status": "PASS",
+  "errors": []
+}

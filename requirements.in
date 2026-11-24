@@ -1,0 +1,14 @@
+# Direct dependencies for the data pipeline, dataset validator, generators, and EDA.
+# The fully resolved, Python-version-specific lock is requirements.txt.
+datasets
+huggingface_hub
+Pillow
+arabic-reshaper
+python-bidi
+matplotlib
+pandas
+tqdm
+opencv-python
+playwright
+Faker
+numpy
